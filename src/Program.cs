@@ -6,6 +6,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//TODO: Add validation
+var optionModels = builder.Services.AddOptionModels(
+    Assembly.GetExecutingAssembly(), builder.Configuration);
+
 builder.Services.AddControllers();
 
 var connectionString = builder.Configuration.GetConnectionString("Default") ??

@@ -8,7 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 namespace AuthApi.Auth;
 
 public static class AuthServiceConfigurations {
-    public static IServiceCollection AddIdentityServices(this IServiceCollection services, JwtOptions jwtOptions, AppPasswordOptions appPasswordOptions) {
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services, JwtOptions jwtOptions,
+        AppPasswordOptions appPasswordOptions) {
         services.AddIdentity<User, IdentityRole>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();

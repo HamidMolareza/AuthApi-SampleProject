@@ -4,7 +4,7 @@ namespace AuthApi.Auth.Options;
 
 public class AppPasswordOptions : OptionModel {
     public override string SectionName => "Password";
-    
+
     public required bool RequireDigit { get; set; }
     public required bool RequireLowercase { get; set; }
     public required bool RequireNonAlphanumeric { get; set; }

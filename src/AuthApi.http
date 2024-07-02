@@ -1,1 +1,22 @@
 @AuthApi_HostAddress = http://localhost:5082
+
+POST {{AuthApi_HostAddress}}/Auth/register
+Accept: */*
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "userName": "string",
+  "password": "String@1",
+  "confirmPassword": "String@1"
+}
+
+###
+POST {{AuthApi_HostAddress}}/Auth/login
+Accept: */*
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "String@1"
+}

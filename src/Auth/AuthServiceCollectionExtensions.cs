@@ -43,7 +43,7 @@ public static class AuthServiceConfigurations {
             // User settings.
             options.User.AllowedUserNameCharacters = appPasswordOptions.AllowedUserNameCharacters;
             options.User.RequireUniqueEmail = appPasswordOptions.RequireUniqueEmail;
-            
+
             options.SignIn.RequireConfirmedAccount = appPasswordOptions.RequireConfirmedAccount;
             options.SignIn.RequireConfirmedEmail = appPasswordOptions.RequireConfirmedEmail;
             options.SignIn.RequireConfirmedPhoneNumber = appPasswordOptions.RequireConfirmedPhoneNumber;

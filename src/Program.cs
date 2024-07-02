@@ -9,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 //TODO: Add validation
 var optionModels = builder.Services.AddOptionModels(
-    Assembly.GetExecutingAssembly(), builder.Configuration);
+    Assembly.GetExecutingAssembly(), builder.Configuration
+);
 
 builder.Services.AddControllers();
 

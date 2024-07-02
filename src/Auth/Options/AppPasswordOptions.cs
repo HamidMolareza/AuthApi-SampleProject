@@ -16,4 +16,8 @@ public class AppPasswordOptions : OptionModel {
     public required bool AllowedForNewUsers { get; set; }
     public required bool RequireUniqueEmail { get; set; }
     public required string AllowedUserNameCharacters { get; set; }
+    public required bool RequireConfirmedAccount { get; set; }
+    public required bool RequireConfirmedEmail { get; set; }
+    public required bool RequireConfirmedPhoneNumber { get; set; }
+    public required bool ProtectPersonalData { get; set; }
 }

@@ -22,6 +22,33 @@ namespace AuthApi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AuthApi.Auth.Role", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
             modelBuilder.Entity("AuthApi.Auth.User", b =>
                 {
                     b.Property<string>("Id")
@@ -87,47 +114,6 @@ namespace AuthApi.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex")
-                        .HasFilter("[NormalizedName] IS NOT NULL");
-
-                    b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "03126b54-d085-4b87-adf0-585dc5e256f5",
-                            Name = "Manager",
-                            NormalizedName = "MANAGER"
-                        },
-                        new
-                        {
-                            Id = "4502b36e-0133-431e-b75f-356281eb83da",
-                            Name = "Administrator",
-                            NormalizedName = "ADMINISTRATOR"
-                        });
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.Property<int>("Id")
@@ -142,15 +128,22 @@ namespace AuthApi.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("nvarchar(34)");
+
                     b.Property<string>("RoleId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("RoleId");
-
                     b.ToTable("AspNetRoleClaims", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityRoleClaim<string>");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -167,15 +160,22 @@ namespace AuthApi.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("nvarchar(34)");
+
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
                     b.ToTable("AspNetUserClaims", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUserClaim<string>");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
@@ -208,11 +208,18 @@ namespace AuthApi.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(34)
+                        .HasColumnType("nvarchar(34)");
+
                     b.HasKey("UserId", "RoleId");
 
-                    b.HasIndex("RoleId");
-
                     b.ToTable("AspNetUserRoles", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUserRole<string>");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -234,41 +241,35 @@ namespace AuthApi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("AuthApi.Auth.RoleClaim", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasDiscriminator().HasValue("RoleClaim");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("AuthApi.Auth.UserClaim", b =>
                 {
-                    b.HasOne("AuthApi.Auth.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>");
+
+                    b.HasIndex("UserId");
+
+                    b.HasDiscriminator().HasValue("UserClaim");
+                });
+
+            modelBuilder.Entity("AuthApi.Auth.UserRole", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUserRole<string>");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasDiscriminator().HasValue("UserRole");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("AuthApi.Auth.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("AuthApi.Auth.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -283,6 +284,61 @@ namespace AuthApi.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("AuthApi.Auth.RoleClaim", b =>
+                {
+                    b.HasOne("AuthApi.Auth.Role", "Role")
+                        .WithMany("RoleClaims")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("AuthApi.Auth.UserClaim", b =>
+                {
+                    b.HasOne("AuthApi.Auth.User", "User")
+                        .WithMany("UserClaims")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AuthApi.Auth.UserRole", b =>
+                {
+                    b.HasOne("AuthApi.Auth.Role", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AuthApi.Auth.User", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AuthApi.Auth.Role", b =>
+                {
+                    b.Navigation("RoleClaims");
+
+                    b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("AuthApi.Auth.User", b =>
+                {
+                    b.Navigation("UserClaims");
+
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

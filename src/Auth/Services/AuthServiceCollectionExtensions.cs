@@ -1,26 +1,31 @@
 using System.Text;
+using AuthApi.Auth.Entities;
 using AuthApi.Auth.Options;
 using AuthApi.Data;
+using AuthApi.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AuthApi.Auth;
+namespace AuthApi.Auth.Services;
 
 public static class AuthServiceConfigurations {
-    public static IServiceCollection AddIdentityServices(this IServiceCollection services, JwtOptions jwtOptions,
-        AppPasswordOptions appPasswordOptions) {
-        services.AddIdentity<User, IdentityRole>()
+    public static IServiceCollection AddIdentityServices(this IServiceCollection services,
+        List<OptionModel> optionModels) {
+        var jwtOptions = optionModels.GetOption<JwtOptions>();
+        var passwordOptions = optionModels.GetOption<AppPasswordOptions>();
+
+        services.AddIdentity<User, Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
+        services.AddScoped<UserManager>();
+
         services.AddAuthentication();
 
-        services.Configure(IdentityConfigureOptions(appPasswordOptions));
+        services.Configure(IdentityConfigureOptions(passwordOptions));
 
         services.ConfigureJwt(jwtOptions);
-
-        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }

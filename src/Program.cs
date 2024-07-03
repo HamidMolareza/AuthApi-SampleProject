@@ -19,9 +19,9 @@ var connectionString = builder.Configuration.GetConnectionString("Default") ??
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-var jwtOptions = optionModels.First(option => option.GetType() == typeof(JwtOptions));
-var passwordOptions = optionModels.First(option => option.GetType() == typeof(AppPasswordOptions));
-builder.Services.AddIdentityServices((JwtOptions)jwtOptions, (AppPasswordOptions)passwordOptions);
+builder.Services.AddIdentityServices(optionModels);
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 

@@ -1,6 +1,5 @@
 using System.Reflection;
-using AuthApi.Auth;
-using AuthApi.Auth.Options;
+using AuthApi.Auth.Services;
 using AuthApi.Data;
 using AuthApi.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +28,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment()) {
+    await app.SeedDatabaseAsync();
+}
 
 app.UseAuthentication();
 app.UseAuthorization();

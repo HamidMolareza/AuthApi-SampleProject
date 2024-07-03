@@ -1,7 +1,8 @@
 using AuthApi.Auth.Dto;
+using AuthApi.Auth.Entities;
+using AuthApi.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi.Auth;
 
@@ -9,7 +10,8 @@ namespace AuthApi.Auth;
 [Route("[controller]")]
 public class AuthController(
     UserManager<User> userManager,
-    IAuthService authService,
+    IUnitOfWork unitOfWork,
+    SignInManager<User> signInManager,
     ILogger<AuthController> logger) : ControllerBase {
     [HttpPost("register")]
     public async Task<ActionResult> Register(RegisterUserReq userReq) {
@@ -19,11 +21,8 @@ public class AuthController(
         };
 
         var result = await userManager.CreateAsync(user, userReq.Password);
-        if (!result.Succeeded) {
-            foreach (var error in result.Errors)
-                ModelState.AddModelError(error.Code, error.Description);
-            return BadRequest(ModelState);
-        }
+        if (!result.Succeeded)
+            return BadRequest(result);
 
         logger.LogInformation("User created a new account with password.");
         if (userManager.Options.SignIn.RequireConfirmedAccount) {
@@ -32,19 +31,37 @@ public class AuthController(
             });
         }
 
-        var token = await authService.CreateTokenAsync(user);
+        var token = await unitOfWork.CreateJwtTokenAsync(user);
         return Ok(new { token });
+    }
+
+    private ActionResult BadRequest(IdentityResult result) {
+        foreach (var error in result.Errors)
+            ModelState.AddModelError(error.Code, error.Description);
+        return BadRequest(ModelState);
     }
 
     [HttpPost("login")]
     public async Task<ActionResult> Login(LoginReq req) {
-        var user = await userManager.FindByEmailAsync(req.Email);
-        if (user is null) return NotFound();
+        var result = await signInManager.PasswordSignInAsync(req.Email,
+            req.Password, false, lockoutOnFailure: true);
 
-        var isPasswordValid = await userManager.CheckPasswordAsync(user, req.Password);
-        if (!isPasswordValid) return Unauthorized();
+        if (result.Succeeded) {
+            var user = await userManager.FindByEmailAsync(req.Email);
+            if (user is null)
+                return Unauthorized(new { Message = "Invalid login attempt." });
+            var token = await unitOfWork.CreateJwtTokenAsync(user);
+            return Ok(new { token });
+        }
 
-        var token = await authService.CreateTokenAsync(user);
-        return Ok(new { token });
+        if (result.RequiresTwoFactor) {
+            return Unauthorized(new { Message = "RequiresTwoFactor" });
+        }
+
+        if (result.IsLockedOut) {
+            return Forbid();
+        }
+
+        return Unauthorized(new { Message = "Invalid login attempt." });
     }
 }

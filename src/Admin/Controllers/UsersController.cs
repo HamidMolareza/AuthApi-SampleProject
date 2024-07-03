@@ -48,7 +48,7 @@ public class UsersController(IUnitOfWork unitOfWork) : ControllerBase {
         return Ok(new { DeletedUsers = deletedUserEmails });
     }
 
-    [HttpPost("AddRole/{id}")]
+    [HttpPost("Role/{id}")]
     public async Task<ActionResult> AddRole(string id, [FromBody] string[] roles) {
         var user = await unitOfWork.UserManager.UsersWithRoles
             .FirstOrDefaultAsync(user => user.Id == id);
@@ -63,7 +63,7 @@ public class UsersController(IUnitOfWork unitOfWork) : ControllerBase {
         return result.Succeeded ? NoContent() : BadRequest(result);
     }
 
-    [HttpPost("RemoveRole/{id}")]
+    [HttpDelete("Role/{id}")]
     public async Task<ActionResult> RemoveRole(string id, [FromBody] string[] roles) {
         var user = await unitOfWork.UserManager.UsersWithRoles
             .FirstOrDefaultAsync(user => user.Id == id);

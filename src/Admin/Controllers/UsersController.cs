@@ -2,16 +2,15 @@ using AuthApi.Admin.Dto;
 using AuthApi.Auth;
 using AuthApi.Auth.Entities;
 using AuthApi.Data;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace AuthApi.Admin;
+namespace AuthApi.Admin.Controllers;
 
 [ApiController]
-[Route("Admin/[controller]")]
-[Authorize(Roles = Roles.Administrator)]
+[Route($"{Routs.Admin}/[controller]")]
+// [Authorize(Roles = Roles.Manager)]
 public class UsersController(IUnitOfWork unitOfWork) : ControllerBase {
     [HttpGet]
     public Task<List<GetAllUsersRes>> GetAll() {

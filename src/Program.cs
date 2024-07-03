@@ -1,4 +1,5 @@
 using System.Reflection;
+using AuthApi.Admin.Filters;
 using AuthApi.Auth.Services;
 using AuthApi.Data;
 using AuthApi.Helpers;
@@ -11,7 +12,7 @@ var optionModels = builder.Services.AddOptionModels(
     Assembly.GetExecutingAssembly(), builder.Configuration
 );
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options => { options.Filters.Add(new AdminAuthorizeFilter()); });
 
 var connectionString = builder.Configuration.GetConnectionString("Default") ??
                        throw new InvalidOperationException("Connection string 'Default' not found.");

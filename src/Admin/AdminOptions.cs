@@ -1,6 +1,6 @@
 using AuthApi.Helpers;
 
-namespace AuthApi.Admin.Controllers;
+namespace AuthApi.Admin;
 
 public class AdminOptions : OptionModel {
     public override string SectionName => "Admin";

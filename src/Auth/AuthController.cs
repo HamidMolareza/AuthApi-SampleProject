@@ -93,4 +93,27 @@ public class AuthController(
             tokens.refresh.Expire
         ));
     }
+
+    [HttpPut("Password")]
+    public async Task<ActionResult> ChangePassword(ChangePasswordReq req) {
+        if (req.CurrentPassword == req.NewPassword)
+            return BadRequest(new { Message = "The new password can not equal with the current password." });
+
+        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userId is null) return Unauthorized();
+
+        var user = await unitOfWork.UserManager.FindByIdAsync(userId);
+        if (user is null) return Unauthorized();
+
+        var result = await unitOfWork.UserManager.ChangePasswordAsync(user, req.CurrentPassword, req.NewPassword);
+        if (!result.Succeeded) return BadRequest(result);
+
+        var tokens = await unitOfWork.TokenManager.GenerateTokensAsync(user, DateTime.UtcNow);
+        return Ok(new TokensRes(
+            tokens.jwt.Value,
+            tokens.jwt.Expire,
+            tokens.refresh.Value,
+            tokens.refresh.Expire
+        ));
+    }
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using AuthApi.Auth.Entities;
 using AuthApi.Auth.Options;
@@ -72,6 +73,39 @@ public static class AuthServiceConfigurations {
                 ValidAudience = jwtOptions.Audience,
                 IssuerSigningKey = new
                     SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey))
+            };
+
+            // Hook into the events to add custom validation logic
+            options.Events = new JwtBearerEvents {
+                OnTokenValidated = async context => {
+                    // Add custom logic here
+                    // e.g., Check user roles, claims, or any other custom validation
+
+                    var userPrincipal = context.Principal;
+                    if (userPrincipal is null || !userPrincipal.HasClaim(claim => claim.Type == Claims.SecurityStamp)) {
+                        context.Fail("Unauthorized"); // Mark the request as failed
+                        return;
+                    }
+
+                    var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager>();
+                    var id = userPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (id is null) {
+                        context.Fail("Unauthorized");
+                        return;
+                    }
+
+                    var user = await userManager.FindByIdAsync(id);
+                    if (user is null) {
+                        context.Fail("Unauthorized");
+                        return;
+                    }
+
+                    if (!userPrincipal.HasClaim(Claims.SecurityStamp, user.SecurityStamp!)) {
+                        context.Fail("Unauthorized");
+                    }
+                },
+                OnAuthenticationFailed = context => Task.CompletedTask,
+                OnMessageReceived = context => Task.CompletedTask
             };
         });
     }

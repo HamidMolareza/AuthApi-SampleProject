@@ -29,5 +29,10 @@ public class UserEntityTypeConfiguration : IEntityTypeConfiguration<User> {
             .WithOne(e => e.User)
             .HasForeignKey(ur => ur.UserId)
             .IsRequired();
+
+        builder.HasMany(e => e.Sessions)
+            .WithOne(e => e.User)
+            .HasForeignKey(e => e.UserId)
+            .IsRequired();
     }
 }

@@ -1,7 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using AuthApi.Auth.Dto;
+using System.Text.Json;
 using AuthApi.Auth.Entities;
 using AuthApi.Auth.Options;
 using AuthApi.Helpers;
@@ -13,41 +13,45 @@ namespace AuthApi.Auth.Services;
 public class TokenManager(
     IOptions<JwtOptions> jwtOptions,
     IOptions<RefreshTokenOptions> refreshTokenOptions,
-    UserManager userManager
-) : ITokenManager {
+    UserManager userManager) : ITokenManager {
     public JwtOptions JwtOptions { get; } = jwtOptions.Value;
     public RefreshTokenOptions RefreshTokenOptions { get; } = refreshTokenOptions.Value;
 
-    public async Task<Token> GenerateJwtAsync(User user, DateTime currentDateTimeUtc, bool addRoleClaims = true) {
-        var claims = await GetClaimsAsync(user, addRoleClaims);
+    public async Task<ITokenManager.Token> GenerateJwtAsync(string userId, string sessionId,
+        DateTime currentDateTimeUtc,
+        bool addRoleClaims = true) {
+        var claims = await GetClaimsAsync(userId, sessionId, addRoleClaims);
         var jwtToken = CreateJwtToken(claims, currentDateTimeUtc.ToUniversalTime());
         return jwtToken;
     }
 
-    public async Task<Token> GenerateRefreshTokenAsync(User user, DateTime currentDateTimeUtc) {
-        var refreshToken = SecurityHelpers.GenerateSecureRandomBase64(RefreshTokenOptions.Length);
+    public ITokenManager.Token GenerateRefreshToken(string sessionId, DateTime currentDateTimeUtc) {
+        var refreshTokenData =
+            new ITokenManager.RefreshToken(SecurityHelpers.GenerateSecureRandomBase64(RefreshTokenOptions.Length),
+                sessionId);
+        var token = JsonSerializer.Serialize(refreshTokenData).ConvertToBase64();
+
         var expire = currentDateTimeUtc.ToUniversalTime().AddHours(RefreshTokenOptions.ExpiresInHours);
 
-        user.RefreshToken = refreshToken;
-        user.RefreshTokenExpireTime = expire;
-
-        var result = await userManager.UpdateAsync(user);
-        if (result.Succeeded)
-            return new Token(refreshToken, expire);
-
-        var errors = result.Errors.Select(error => $"{error.Code}: {error.Description}");
-        throw new Exception(string.Join('\n', errors));
+        return new ITokenManager.Token(token, expire);
     }
 
-    public async Task<(Token jwt, Token refresh)> GenerateTokensAsync(User user, DateTime currentDateTimeUtc,
+    public async Task<(ITokenManager.Token jwt, ITokenManager.Token refresh)> GenerateTokensAsync(string userId,
+        string sessionId,
+        DateTime currentDateTimeUtc,
         bool addRoleClaims = true) {
-        var jwt = await GenerateJwtAsync(user, currentDateTimeUtc, addRoleClaims);
-        var refreshToken = await GenerateRefreshTokenAsync(user, currentDateTimeUtc);
+        var jwt = await GenerateJwtAsync(userId, sessionId, currentDateTimeUtc, addRoleClaims);
+        var refreshToken = GenerateRefreshToken(sessionId, currentDateTimeUtc);
 
-        return new ValueTuple<Token, Token>(jwt, refreshToken);
+        return new ValueTuple<ITokenManager.Token, ITokenManager.Token>(jwt, refreshToken);
     }
 
-    private Token CreateJwtToken(IEnumerable<Claim> claims, DateTime currentDateTimeUtc) {
+    public ITokenManager.RefreshToken? ParseRefreshToken(string token) {
+        var jsonStr = token.ConvertFromBase64();
+        return JsonSerializer.Deserialize<ITokenManager.RefreshToken>(jsonStr);
+    }
+
+    private ITokenManager.Token CreateJwtToken(IEnumerable<Claim> claims, DateTime currentDateTimeUtc) {
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(JwtOptions.SecretKey);
         var credentials = new SigningCredentials(
@@ -65,22 +69,21 @@ public class TokenManager(
 
         var token = tokenHandler.CreateToken(tokenDescriptor);
         var jwtToken = tokenHandler.WriteToken(token);
-        return new Token(jwtToken, expire);
+        return new ITokenManager.Token(jwtToken, expire);
     }
 
-    private async Task<List<Claim>> GetClaimsAsync(User user, bool addRoleClaims = true) {
+    private async Task<List<Claim>> GetClaimsAsync(string userId, string sessionId, bool addRoleClaims = true) {
         // Avoid sensitive information (e.g., passwords) and large or non-essential data to maintain security and efficiency.
 
-        var securityStamp = await userManager.GetSecurityStampAsync(user);
-
-        //TODO: Add another?
         var claims = new List<Claim> {
-            new(ClaimTypes.NameIdentifier, user.Id),
-            new(Claims.SecurityStamp, securityStamp),
+            new(JwtRegisteredClaimNames.Sub, userId),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
+            new(Claims.SessionId, sessionId),
         };
 
         if (addRoleClaims) {
-            var roles = await userManager.GetRolesAsync(user);
+            //TODO: Check
+            var roles = await userManager.GetRolesAsync(new User { Id = userId });
             claims.AddRange(roles.Select(role =>
                 new Claim(ClaimTypes.Role, role))
             );

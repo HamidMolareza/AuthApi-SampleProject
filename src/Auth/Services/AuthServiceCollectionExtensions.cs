@@ -21,7 +21,8 @@ public static class AuthServiceConfigurations {
             .AddDefaultTokenProviders();
 
         services.AddScoped<UserManager>()
-            .AddScoped<ITokenManager, TokenManager>();
+            .AddScoped<ITokenManager, TokenManager>()
+            .AddScoped<ISessionManager, SessionManager>();
 
         services.AddAuthentication();
 
@@ -82,26 +83,22 @@ public static class AuthServiceConfigurations {
                     // e.g., Check user roles, claims, or any other custom validation
 
                     var userPrincipal = context.Principal;
-                    if (userPrincipal is null || !userPrincipal.HasClaim(claim => claim.Type == Claims.SecurityStamp)) {
+                    if (userPrincipal is null) {
                         context.Fail("Unauthorized"); // Mark the request as failed
                         return;
                     }
 
-                    var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager>();
-                    var id = userPrincipal.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (id is null) {
+                    var sessionId = userPrincipal.FindFirstValue(Claims.SessionId);
+                    if (sessionId is null) {
                         context.Fail("Unauthorized");
                         return;
                     }
 
-                    var user = await userManager.FindByIdAsync(id);
-                    if (user is null) {
+                    var sessionManager = context.HttpContext.RequestServices.GetRequiredService<ISessionManager>();
+                    var session = await sessionManager.GetByIdAsync(new Guid(sessionId));
+                    if (session is null || !session.Active) {
                         context.Fail("Unauthorized");
                         return;
-                    }
-
-                    if (!userPrincipal.HasClaim(Claims.SecurityStamp, user.SecurityStamp!)) {
-                        context.Fail("Unauthorized");
                     }
                 },
                 OnAuthenticationFailed = context => Task.CompletedTask,

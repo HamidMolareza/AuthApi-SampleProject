@@ -13,6 +13,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         User, Role, string,
         UserClaim, UserRole, IdentityUserLogin<string>,
         RoleClaim, IdentityUserToken<string>>(options) {
+    public DbSet<Session> Sessions { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder) {
         base.OnModelCreating(builder);
 

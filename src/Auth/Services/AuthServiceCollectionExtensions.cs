@@ -19,7 +19,8 @@ public static class AuthServiceConfigurations {
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-        services.AddScoped<UserManager>();
+        services.AddScoped<UserManager>()
+            .AddScoped<ITokenManager, TokenManager>();
 
         services.AddAuthentication();
 

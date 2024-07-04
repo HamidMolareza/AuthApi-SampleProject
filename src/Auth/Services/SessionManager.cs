@@ -9,6 +9,12 @@ public class SessionManager(AppDbContext db) : ISessionManager {
         return db.Sessions.FirstOrDefaultAsync(session => session.Id == id);
     }
 
+    public Task<Session?> GetByIdAsync(Guid id, string userId) {
+        return db.Sessions
+            .Where(s => s.UserId == userId)
+            .FirstOrDefaultAsync(session => session.Id == id);
+    }
+
     public async Task CreateAsync(Session session) {
         await db.Sessions.AddAsync(session);
     }
@@ -27,5 +33,12 @@ public class SessionManager(AppDbContext db) : ISessionManager {
         session.RefreshTokenExpiresAt = refreshExpire.ToUniversalTime();
 
         //TODO: concurrency
+    }
+
+    public Task<List<Session>> GetAllAsync(string? userId = null) {
+        var query = db.Sessions.AsQueryable();
+        if (userId is not null)
+            query = query.Where(s => s.UserId == userId);
+        return query.ToListAsync();
     }
 }

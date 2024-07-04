@@ -41,7 +41,7 @@ public class RolesController(IUnitOfWork unitOfWork) : ControllerBase {
         if (role is null) return NoContent();
 
         var result = await unitOfWork.RoleManager.SetRoleNameAsync(role, req.NewName);
-        return result.Succeeded ? Created() : BadRequest(result);
+        return result.Succeeded ? NoContent() : BadRequest(result);
     }
     
     [HttpDelete("{id}")]
@@ -50,7 +50,7 @@ public class RolesController(IUnitOfWork unitOfWork) : ControllerBase {
         if (role is null) return NoContent();
 
         var result = await unitOfWork.RoleManager.DeleteAsync(role);
-        return result.Succeeded ? Created() : BadRequest(result);
+        return result.Succeeded ? NoContent() : BadRequest(result);
     }
 
     private ActionResult BadRequest(IdentityResult result) {

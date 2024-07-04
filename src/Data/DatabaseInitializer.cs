@@ -1,4 +1,4 @@
-using AuthApi.Admin;
+using AuthApi.Admin.Options;
 using AuthApi.Auth;
 using AuthApi.Auth.Entities;
 using Microsoft.AspNetCore.Identity;

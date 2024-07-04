@@ -43,7 +43,7 @@ public class RolesController(IUnitOfWork unitOfWork) : ControllerBase {
         var result = await unitOfWork.RoleManager.SetRoleNameAsync(role, req.NewName);
         return result.Succeeded ? NoContent() : BadRequest(result);
     }
-    
+
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteRole(string id) {
         var role = await unitOfWork.RoleManager.FindByIdAsync(id);

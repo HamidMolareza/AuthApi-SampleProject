@@ -13,14 +13,17 @@ public static class OptionModelHelpers {
         var optionModelType = typeof(OptionModel);
         var sectionNameProp = optionModelType.GetProperty(nameof(OptionModel.SectionName))!;
 
-        // Get all types that implement OptionModel interface
+        // Get all OptionModel types with given assembly
         var optionTypes = executingAssembly.GetTypes()
             .Where(type => type is { IsClass: true, IsAbstract: false }
                            && optionModelType.IsAssignableFrom(type));
 
-        return optionTypes
+        // Add and get value of each OptionModel
+        var optionModels = optionTypes
             .Select(optionType => services.AddOptionModel(configuration, optionType, sectionNameProp))
             .ToList();
+
+        return optionModels;
     }
 
     private static OptionModel AddOptionModel(this IServiceCollection services,

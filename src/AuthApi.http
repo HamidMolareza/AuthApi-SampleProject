@@ -17,6 +17,6 @@ Accept: */*
 Content-Type: application/json
 
 {
-  "email": "user@example.com",
-  "password": "String@1"
+  "email": "admin@admin.com",
+  "password": "Admin@123"
 }

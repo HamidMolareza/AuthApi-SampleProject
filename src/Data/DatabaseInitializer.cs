@@ -1,6 +1,7 @@
 using AuthApi.Admin.Options;
 using AuthApi.Auth;
 using AuthApi.Auth.Entities;
+using AuthApi.Program;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 

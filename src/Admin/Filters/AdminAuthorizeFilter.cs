@@ -1,4 +1,5 @@
 using AuthApi.Auth;
+using AuthApi.Program;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 

@@ -1,7 +1,7 @@
 using AuthApi.Admin.Dto;
 using AuthApi.Auth;
 using AuthApi.Auth.Entities;
-using AuthApi.Data;
+using AuthApi.Program;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

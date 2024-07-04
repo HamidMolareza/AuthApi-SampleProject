@@ -3,6 +3,7 @@ using AuthApi.Admin.Filters;
 using AuthApi.Auth.Services;
 using AuthApi.Data;
 using AuthApi.Helpers;
+using AuthApi.Program;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,7 +27,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options => options.SwaggerConfigs());
 
 var app = builder.Build();
 

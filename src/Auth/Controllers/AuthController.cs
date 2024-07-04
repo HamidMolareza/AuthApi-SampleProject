@@ -157,4 +157,19 @@ public class AuthController(
             refresh.Expire
         ));
     }
+
+    [HttpPost("logout")]
+    public async Task<ActionResult> Logout() {
+        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var sessionId = HttpContext.User.FindFirstValue(Claims.SessionId);
+        if (userId is null || sessionId is null) return Unauthorized();
+
+        var session = await unitOfWork.SessionManager.GetByIdAsync(new Guid(sessionId), userId);
+        if (session is null) return Unauthorized();
+
+        await unitOfWork.SessionManager.RemoveAsync(new Guid(sessionId), userId);
+        await unitOfWork.SaveChangesAsync();
+
+        return NoContent();
+    }
 }

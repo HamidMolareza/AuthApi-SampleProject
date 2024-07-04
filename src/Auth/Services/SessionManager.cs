@@ -41,4 +41,10 @@ public class SessionManager(AppDbContext db) : ISessionManager {
             query = query.Where(s => s.UserId == userId);
         return query.ToListAsync();
     }
+
+    public async Task RemoveAsync(Guid sessionId, string userId) {
+        var sessions = await db.Sessions.Where(session => session.UserId == userId && session.Id == sessionId)
+            .ToListAsync();
+        db.Sessions.RemoveRange(sessions);
+    }
 }

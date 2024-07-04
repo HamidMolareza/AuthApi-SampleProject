@@ -31,4 +31,27 @@ public class SessionsController(IUnitOfWork unitOfWork) : ControllerBase {
         return Ok(new GetSessionsRes(sessions.Id, sessions.IpAddress, sessions.UserAgent, sessions.IsRevoked,
             sessions.CreatedAt));
     }
+
+    [HttpGet("Current")]
+    public async Task<ActionResult<GetSessionsRes>> GetCurrent() {
+        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var sessionId = HttpContext.User.FindFirstValue(Claims.SessionId);
+        if (userId is null || sessionId is null) return Unauthorized();
+
+        var sessions = await unitOfWork.SessionManager.GetByIdAsync(new Guid(sessionId), userId);
+        if (sessions is null) return Unauthorized();
+        return Ok(new GetSessionsRes(sessions.Id, sessions.IpAddress, sessions.UserAgent, sessions.IsRevoked,
+            sessions.CreatedAt));
+    }
+
+    [HttpPost("TerminateOther")]
+    public async Task<ActionResult> TerminateOther() {
+        var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var sessionId = HttpContext.User.FindFirstValue(Claims.SessionId);
+        if (userId is null || sessionId is null) return Unauthorized();
+
+        await unitOfWork.SessionManager.RevokeAllExceptAsync(new Guid(sessionId), userId);
+        await unitOfWork.SaveChangesAsync();
+        return NoContent();
+    }
 }

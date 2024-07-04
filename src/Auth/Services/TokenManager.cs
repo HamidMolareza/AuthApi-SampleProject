@@ -69,11 +69,9 @@ public class TokenManager(
     }
 
     private async Task<List<Claim>> GetClaimsAsync(User user, bool addRoleClaims = true) {
-        //Avoid sensitive information (e.g., passwords) and large or non-essential data to maintain security and efficiency.
+        // Avoid sensitive information (e.g., passwords) and large or non-essential data to maintain security and efficiency.
 
-        var securityStamp = user.SecurityStamp ??
-                            throw new Exception(
-                                $"Can not set {nameof(user.SecurityStamp)} in JWT claims because it is null.");
+        var securityStamp = await userManager.GetSecurityStampAsync(user);
 
         //TODO: Add another?
         var claims = new List<Claim> {

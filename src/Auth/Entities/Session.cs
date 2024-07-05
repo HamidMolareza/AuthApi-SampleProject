@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using AuthApi.Data;
 
 namespace AuthApi.Auth.Entities;
 
-public class Session {
+public class Session : ISoftDelete {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public Guid Id { get; set; }
@@ -21,4 +22,5 @@ public class Session {
     public DateTime CreatedAt { get; set; }
 
     public bool Active => !IsRevoked;
+    public bool IsDeleted { get; set; }
 }

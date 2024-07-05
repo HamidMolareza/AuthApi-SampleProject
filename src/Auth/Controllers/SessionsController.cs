@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AuthApi.Auth.Dto;
 using AuthApi.Program;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,15 +11,14 @@ namespace AuthApi.Auth.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize]
-public class SessionsController(IUnitOfWork unitOfWork) : ControllerBase {
+public class SessionsController(IUnitOfWork unitOfWork, IMapper mapper) : ControllerBase {
     [HttpGet]
     public async Task<ActionResult<List<GetSessionsRes>>> GetAll() {
         var userId = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (userId is null) return Unauthorized();
 
         var sessions = await unitOfWork.SessionManager.GetAllAsync(userId);
-        return sessions.Select(s => new GetSessionsRes(s.Id, s.IpAddress, s.UserAgent, s.IsRevoked, s.CreatedAt))
-            .ToList();
+        return sessions.Select(mapper.Map<GetSessionsRes>).ToList();
     }
 
     [HttpGet("{id}")]
@@ -28,8 +28,9 @@ public class SessionsController(IUnitOfWork unitOfWork) : ControllerBase {
 
         var sessions = await unitOfWork.SessionManager.GetByIdAsync(new Guid(id), userId);
         if (sessions is null) return NotFound();
-        return Ok(new GetSessionsRes(sessions.Id, sessions.IpAddress, sessions.UserAgent, sessions.IsRevoked,
-            sessions.CreatedAt));
+
+        var result = mapper.Map<GetSessionsRes>(sessions);
+        return Ok(result);
     }
 
     [HttpGet("Current")]
@@ -40,8 +41,9 @@ public class SessionsController(IUnitOfWork unitOfWork) : ControllerBase {
 
         var sessions = await unitOfWork.SessionManager.GetByIdAsync(new Guid(sessionId), userId);
         if (sessions is null) return Unauthorized();
-        return Ok(new GetSessionsRes(sessions.Id, sessions.IpAddress, sessions.UserAgent, sessions.IsRevoked,
-            sessions.CreatedAt));
+        
+        var result = mapper.Map<GetSessionsRes>(sessions);
+        return Ok(result);
     }
 
     [HttpPost("TerminateOther")]

@@ -82,7 +82,6 @@ public class TokenManager(
         };
 
         if (addRoleClaims) {
-            //TODO: Check
             var roles = await userManager.GetRolesAsync(new User { Id = userId });
             claims.AddRange(roles.Select(role =>
                 new Claim(ClaimTypes.Role, role))

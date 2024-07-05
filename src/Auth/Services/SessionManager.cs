@@ -1,5 +1,6 @@
 using AuthApi.Auth.Entities;
 using AuthApi.Data;
+using AuthApi.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi.Auth.Services;
@@ -25,12 +26,14 @@ public class SessionManager(AppDbContext db) : ISessionManager {
         db.Sessions.RemoveRange(sessions);
     }
 
-    public async Task UpdateRefreshTokenAsync(Guid sessionId, string refreshToken, DateTime refreshExpire) {
+    public async Task<Session?> UpdateRefreshTokenAsync(Guid sessionId, string refreshToken, DateTime refreshExpire) {
         var session = await db.Sessions.FindAsync(sessionId);
-        if (session is null) throw new Exception($"Can not find any session with id '{sessionId}'.");
-
-        session.RefreshToken = refreshToken;
+        if (session is null) return session;
+        
+        SetRefreshToken(session, refreshToken);
         session.RefreshTokenExpiresAt = refreshExpire.ToUniversalTime();
+
+        return session;
 
         //TODO: concurrency
     }
@@ -46,5 +49,16 @@ public class SessionManager(AppDbContext db) : ISessionManager {
         var sessions = await db.Sessions.Where(session => session.UserId == userId && session.Id == sessionId)
             .ToListAsync();
         db.Sessions.RemoveRange(sessions);
+    }
+
+    public void SetRefreshToken(Session session, string refreshTokenValue) {
+        session.RefreshTokenHash = SecurityHelpers.Sha512(refreshTokenValue);
+    }
+
+    public async Task<bool> ValidateRefreshTokenAsync(Guid sessionId, string refreshTokenValue) {
+        var session = await db.Sessions.FindAsync(sessionId);
+        if (session is null) return false;
+
+        return SecurityHelpers.Sha512(refreshTokenValue) == session.RefreshTokenHash;
     }
 }

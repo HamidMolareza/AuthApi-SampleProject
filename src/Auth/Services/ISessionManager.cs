@@ -7,7 +7,9 @@ public interface ISessionManager {
     Task<Session?> GetByIdAsync(Guid id, string userId);
     public Task CreateAsync(Session session);
     public Task RevokeAllExceptAsync(Guid sessionId, string userId);
-    public Task UpdateRefreshTokenAsync(Guid sessionId, string refreshToken, DateTime refreshExpire);
+    public Task<Session?> UpdateRefreshTokenAsync(Guid sessionId, string refreshToken, DateTime refreshExpire);
     public Task<List<Session>> GetAllAsync(string? userId = null);
     public Task RemoveAsync(Guid sessionId, string userId);
+    public void SetRefreshToken(Session session, string refreshTokenValue);
+    public Task<bool> ValidateRefreshTokenAsync(Guid sessionId, string refreshTokenValue);
 }

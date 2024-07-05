@@ -5,7 +5,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-//TODO: Use automapper
 namespace AuthApi.Auth.Controllers;
 
 [ApiController]

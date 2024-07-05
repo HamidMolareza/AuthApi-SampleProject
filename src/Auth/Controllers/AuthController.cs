@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AuthApi.Auth.Dto;
 using AuthApi.Auth.Entities;
+using AuthApi.Auth.Services;
 using AuthApi.Program;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -30,34 +31,43 @@ public class AuthController(
             });
         }
 
-        var userId = await unitOfWork.UserManager.GetUserIdAsync(user);
-        var now = DateTime.UtcNow;
-        var session = await CreateSessionAsync(userId, now);
-
-        var jwtToken = await unitOfWork.TokenManager.GenerateJwtAsync(userId, session.Id.ToString(), now);
-        return Ok(new TokensRes(
-            jwtToken.Value,
-            jwtToken.Expire,
-            session.RefreshToken,
-            session.RefreshTokenExpiresAt
-        ));
+        var tokens = await GenerateTokensAsync(user);
+        return Ok(tokens);
     }
 
-    private async Task<Session> CreateSessionAsync(string userId, DateTime now) {
+    private async Task<TokensRes> GenerateTokensAsync(User user) {
+        var now = DateTime.UtcNow;
+        var userId = await unitOfWork.UserManager.GetUserIdAsync(user);
         var sessionId = Guid.NewGuid();
+
         var refreshToken = unitOfWork.TokenManager.GenerateRefreshToken(sessionId.ToString(), now);
+        var session = await CreateSessionAsync(userId, now, refreshToken, sessionId);
+
+        var jwtToken = await unitOfWork.TokenManager.GenerateJwtAsync(userId, session.Id.ToString(), now);
+
+        await unitOfWork.SaveChangesAsync();
+        var tokens = new TokensRes(
+            jwtToken.Value,
+            jwtToken.Expire,
+            refreshToken.Value,
+            session.RefreshTokenExpiresAt
+        );
+        return tokens;
+    }
+
+    private async Task<Session> CreateSessionAsync(string userId, DateTime now, ITokenManager.Token refreshToken,
+        Guid sessionId) {
         var session = new Session {
             Id = sessionId,
             IsRevoked = false,
-            RefreshToken = refreshToken.Value,
             RefreshTokenExpiresAt = refreshToken.Expire,
             UserId = userId,
             CreatedAt = now,
             IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()!,
             UserAgent = HttpContext.Request.Headers.UserAgent.ToString()
         };
+        unitOfWork.SessionManager.SetRefreshToken(session, refreshToken.Value);
         await unitOfWork.SessionManager.CreateAsync(session);
-        await unitOfWork.SaveChangesAsync();
         return session;
     }
 
@@ -76,16 +86,8 @@ public class AuthController(
             var user = await unitOfWork.UserManager.FindByEmailAsync(req.Email);
             if (user is null) return Unauthorized();
 
-            var now = DateTime.UtcNow;
-            var session = await CreateSessionAsync(user.Id, now);
-
-            var jwtToken = await unitOfWork.TokenManager.GenerateJwtAsync(user.Id, session.Id.ToString(), now);
-            return Ok(new TokensRes(
-                jwtToken.Value,
-                jwtToken.Expire,
-                session.RefreshToken,
-                session.RefreshTokenExpiresAt
-            ));
+            var tokens = await GenerateTokensAsync(user);
+            return Ok(tokens);
         }
 
         if (result.RequiresTwoFactor) {
@@ -105,17 +107,19 @@ public class AuthController(
         var inputRefreshToken = unitOfWork.TokenManager.ParseRefreshToken(req.RefreshToken);
         if (inputRefreshToken is null) return Unauthorized();
 
-        var session = await unitOfWork.SessionManager.GetByIdAsync(new Guid(inputRefreshToken.Sid));
+        var sessionId = new Guid(inputRefreshToken.Sid);
+        var session = await unitOfWork.SessionManager.GetByIdAsync(sessionId);
         if (session is null) return Unauthorized();
 
-        if (session.RefreshToken != req.RefreshToken) return Unauthorized();
-        if (session.RefreshTokenExpiresAt <= DateTime.UtcNow) return Unauthorized();
+        var valid = await unitOfWork.SessionManager.ValidateRefreshTokenAsync(sessionId, req.RefreshToken);
+        if (!valid) return Unauthorized();
 
         var tokens =
             await unitOfWork.TokenManager.GenerateTokensAsync(session.UserId, inputRefreshToken.Sid, DateTime.UtcNow);
 
-        session.RefreshToken = tokens.refresh.Value;
+        unitOfWork.SessionManager.SetRefreshToken(session, tokens.refresh.Value);
         session.RefreshTokenExpiresAt = tokens.refresh.Expire;
+
         await unitOfWork.SaveChangesAsync();
 
         return Ok(new TokensRes(
@@ -148,7 +152,7 @@ public class AuthController(
             await unitOfWork.SessionManager.RevokeAllExceptAsync(sessionGuid, userId);
 
             var (jwt, refresh) = await unitOfWork.TokenManager.GenerateTokensAsync(userId, sessionId, DateTime.UtcNow);
-            await unitOfWork.SessionManager.UpdateRefreshTokenAsync(sessionGuid, refresh.Value, refresh.Expire);
+            _ = await unitOfWork.SessionManager.UpdateRefreshTokenAsync(sessionGuid, refresh.Value, refresh.Expire);
 
             await unitOfWork.SaveChangesAsync();
             await transaction.CommitAsync();

@@ -12,7 +12,7 @@ public class Session : ISoftDelete {
     [Required] [MaxLength(45)] public string IpAddress { get; set; } = default!;
     [Required] [MaxLength(512)] public string UserAgent { get; set; } = default!;
 
-    [Required] [MaxLength(200)] public string RefreshToken { get; set; } = default!;
+    [Required] [MaxLength(200)] public string RefreshTokenHash { get; set; } = default!;
     public DateTime RefreshTokenExpiresAt { get; set; }
 
     [Required] [MaxLength(450)] public string UserId { get; set; } = default!;

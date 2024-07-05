@@ -4,7 +4,7 @@ using AutoMapper;
 
 namespace AuthApi.Auth;
 
-public class AuthMappingProfile: Profile {
+public class AuthMappingProfile : Profile {
     public AuthMappingProfile() {
         CreateMap<Session, GetSessionsRes>();
     }

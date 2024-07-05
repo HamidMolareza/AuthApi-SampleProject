@@ -2,6 +2,7 @@
 
 using System.Reflection;
 using AuthApi.Auth.Entities;
+using AuthApi.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -20,37 +21,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-        foreach (var entityType in builder.Model.GetEntityTypes()) {
-            if (typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType)) {
-                var method = typeof(AppDbContext)
-                    .GetMethod(nameof(SetSoftDeleteFilter), BindingFlags.NonPublic | BindingFlags.Static)
-                    ?.MakeGenericMethod(entityType.ClrType);
-
-                method?.Invoke(null, [builder]);
-            }
-        }
+        builder.SetSoftDeleteForEntities();
     }
 
     public override int SaveChanges() {
-        HandleSoftDelete();
+        ChangeTracker.HandleSoftDelete();
         return base.SaveChanges();
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) {
-        HandleSoftDelete();
+        ChangeTracker.HandleSoftDelete();
         return base.SaveChangesAsync(cancellationToken);
-    }
-
-
-    private static void SetSoftDeleteFilter<TEntity>(ModelBuilder modelBuilder) where TEntity : class, ISoftDelete {
-        modelBuilder.Entity<TEntity>().HasQueryFilter(e => !e.IsDeleted);
-    }
-
-    private void HandleSoftDelete() {
-        foreach (var entry in ChangeTracker.Entries()
-                     .Where(e => e is { State: EntityState.Deleted, Entity: ISoftDelete })) {
-            entry.State = EntityState.Modified;
-            ((ISoftDelete)entry.Entity).IsDeleted = true;
-        }
     }
 }

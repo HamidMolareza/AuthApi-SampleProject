@@ -41,7 +41,7 @@ public class SessionsController(IUnitOfWork unitOfWork, IMapper mapper) : Contro
 
         var sessions = await unitOfWork.SessionManager.GetByIdAsync(new Guid(sessionId), userId);
         if (sessions is null) return Unauthorized();
-        
+
         var result = mapper.Map<GetSessionsRes>(sessions);
         return Ok(result);
     }

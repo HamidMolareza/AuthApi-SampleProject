@@ -141,8 +141,7 @@ public class AuthController(
 
         await using var transaction = await unitOfWork.BeginTransactionAsync();
 
-        try
-        {
+        try {
             var result = await unitOfWork.UserManager.ChangePasswordAsync(user, req.CurrentPassword, req.NewPassword);
             if (!result.Succeeded) return BadRequest(result);
 
@@ -161,8 +160,7 @@ public class AuthController(
                 refresh.Expire
             ));
         }
-        catch (Exception)
-        {
+        catch (Exception) {
             await transaction.RollbackAsync();
             throw;
         }

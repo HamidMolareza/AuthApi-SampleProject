@@ -12,7 +12,6 @@ namespace AuthApi.Auth.Controllers;
 [Route("[controller]")]
 public class AuthController(
     IUnitOfWork unitOfWork,
-    SignInManager<User> signInManager,
     ILogger<AuthController> logger) : ControllerBase {
     [HttpPost("register")]
     public async Task<ActionResult<TokensRes>> Register(RegisterUserReq userReq) {
@@ -70,7 +69,7 @@ public class AuthController(
 
     [HttpPost("login")]
     public async Task<ActionResult<TokensRes>> Login(LoginReq req) {
-        var result = await signInManager.PasswordSignInAsync(req.Email,
+        var result = await unitOfWork.SignInManager.PasswordSignInAsync(req.Email,
             req.Password, false, lockoutOnFailure: true);
 
         if (result.Succeeded) {
@@ -140,22 +139,33 @@ public class AuthController(
         var user = await unitOfWork.UserManager.FindByIdAsync(userId);
         if (user is null) return Unauthorized();
 
-        var result = await unitOfWork.UserManager.ChangePasswordAsync(user, req.CurrentPassword, req.NewPassword);
-        if (!result.Succeeded) return BadRequest(result);
+        await using var transaction = await unitOfWork.BeginTransactionAsync();
 
-        await unitOfWork.SessionManager.RevokeAllExceptAsync(sessionGuid, userId);
+        try
+        {
+            var result = await unitOfWork.UserManager.ChangePasswordAsync(user, req.CurrentPassword, req.NewPassword);
+            if (!result.Succeeded) return BadRequest(result);
 
-        var (jwt, refresh) = await unitOfWork.TokenManager.GenerateTokensAsync(userId, sessionId, DateTime.UtcNow);
-        await unitOfWork.SessionManager.UpdateRefreshTokenAsync(sessionGuid, refresh.Value, refresh.Expire);
+            await unitOfWork.SessionManager.RevokeAllExceptAsync(sessionGuid, userId);
 
-        await unitOfWork.SaveChangesAsync();
+            var (jwt, refresh) = await unitOfWork.TokenManager.GenerateTokensAsync(userId, sessionId, DateTime.UtcNow);
+            await unitOfWork.SessionManager.UpdateRefreshTokenAsync(sessionGuid, refresh.Value, refresh.Expire);
 
-        return Ok(new TokensRes(
-            jwt.Value,
-            jwt.Expire,
-            refresh.Value,
-            refresh.Expire
-        ));
+            await unitOfWork.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Ok(new TokensRes(
+                jwt.Value,
+                jwt.Expire,
+                refresh.Value,
+                refresh.Expire
+            ));
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     [HttpPost("logout")]

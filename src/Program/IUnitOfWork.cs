@@ -10,8 +10,7 @@ public interface IUnitOfWork {
     public RoleManager<Role> RoleManager { get; }
     public ITokenManager TokenManager { get; }
     public ISessionManager SessionManager { get; }
-    public Task<IDbContextTransaction> BeginTransaction();
-    public Task CommitTransactionAsync();
-    public Task RollbackTransactionAsync();
+    public SignInManager<User> SignInManager { get; }
+    public Task<IDbContextTransaction> BeginTransactionAsync();
     public Task<int> SaveChangesAsync();
 }

@@ -11,23 +11,17 @@ public class UnitOfWork(
     RoleManager<Role> roleManager,
     ITokenManager tokenManager,
     ISessionManager sessionManager,
+    SignInManager<User> signInManager,
     AppDbContext db
 ) : IUnitOfWork {
     public UserManager UserManager { get; } = userManager;
     public RoleManager<Role> RoleManager { get; } = roleManager;
     public ITokenManager TokenManager { get; } = tokenManager;
     public ISessionManager SessionManager { get; } = sessionManager;
+    public SignInManager<User> SignInManager { get; } = signInManager;
 
-    public Task<IDbContextTransaction> BeginTransaction() {
+    public Task<IDbContextTransaction> BeginTransactionAsync() {
         return db.Database.BeginTransactionAsync();
-    }
-
-    public Task CommitTransactionAsync() {
-        return db.Database.CommitTransactionAsync();
-    }
-
-    public Task RollbackTransactionAsync() {
-        return db.Database.RollbackTransactionAsync();
     }
 
     public Task<int> SaveChangesAsync() {

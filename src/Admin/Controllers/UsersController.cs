@@ -26,6 +26,7 @@ public class UsersController(IUnitOfWork unitOfWork) : ControllerBase {
             .Where(user => user.Id == id)
             .FirstOrDefaultAsync();
         if (user is null) return NotFound();
+
         return Ok(new GetUserByIdRes(user.Id, user.UserName, user.Email,
             user.EmailConfirmed, user.UserRoles.Select(userRole => userRole.Role.Name!)));
     }

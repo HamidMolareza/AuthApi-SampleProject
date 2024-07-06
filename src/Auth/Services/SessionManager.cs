@@ -29,7 +29,7 @@ public class SessionManager(AppDbContext db) : ISessionManager {
     public async Task<Session?> UpdateRefreshTokenAsync(Guid sessionId, string refreshToken, DateTime refreshExpire) {
         var session = await db.Sessions.FindAsync(sessionId);
         if (session is null) return session;
-        
+
         SetRefreshToken(session, refreshToken);
         session.RefreshTokenExpiresAt = refreshExpire.ToUniversalTime();
 

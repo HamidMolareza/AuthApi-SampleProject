@@ -7,7 +7,7 @@ namespace AuthApi.Program;
 
 public interface IUnitOfWork {
     public UserManager UserManager { get; }
-    public RoleManager<Role> RoleManager { get; }
+    public RoleManager RoleManager { get; }
     public ITokenManager TokenManager { get; }
     public ISessionManager SessionManager { get; }
     public SignInManager<User> SignInManager { get; }

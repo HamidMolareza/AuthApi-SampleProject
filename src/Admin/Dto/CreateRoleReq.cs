@@ -1,3 +1,3 @@
 namespace AuthApi.Admin.Dto;
 
-public record CreateRoleReq(string Name);
+public record CreateRoleReq(List<string> Names);

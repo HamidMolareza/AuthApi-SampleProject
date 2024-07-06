@@ -21,6 +21,7 @@ public static class AuthServiceConfigurations {
             .AddDefaultTokenProviders();
 
         services.AddScoped<UserManager>()
+            .AddScoped<RoleManager>()
             .AddScoped<ITokenManager, TokenManager>()
             .AddScoped<ISessionManager, SessionManager>();
 

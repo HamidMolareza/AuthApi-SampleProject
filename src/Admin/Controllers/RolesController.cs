@@ -1,47 +1,53 @@
 using AuthApi.Admin.Dto;
-using AuthApi.Auth.Entities;
 using AuthApi.Program;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi.Admin.Controllers;
 
 [ApiController]
 [Route($"{Routs.Admin}/[controller]")]
-public class RolesController(IUnitOfWork unitOfWork) : ControllerBase {
+public class RolesController(IUnitOfWork unitOfWork, IMapper mapper) : ControllerBase {
     [HttpGet]
-    public Task<List<GetAllRolesRes>> GetAllRoles() {
-        return unitOfWork.RoleManager.Roles.AsNoTracking()
-            .Select(role => new GetAllRolesRes(role.Id, role.Name))
-            .ToListAsync();
+    public async Task<List<GetRoleRes>> GetAllRoles() {
+        var roles = await unitOfWork.RoleManager
+            .GetAllAsync(false, false, true);
+        return roles.Select(mapper.Map<GetRoleRes>).ToList();
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<GetRoleRes>> GetRoleById(string id) {
-        var item = await unitOfWork.RoleManager.Roles.AsNoTracking()
-            .FirstOrDefaultAsync(role => role.Id == id);
-        if (item is null) return NotFound();
+        var item = await unitOfWork.RoleManager
+            .GetByIdAsync(id, false, false, true);
 
-        return Ok(new GetRoleRes(item.Id, item.Name));
+        if (item is null) return NotFound();
+        return Ok(mapper.Map<GetRoleRes>(item));
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateRole(CreateRoleReq req) {
-        var isExist = await unitOfWork.RoleManager.RoleExistsAsync(req.Name);
-        if (isExist) return NoContent();
+    public async Task<ActionResult<GetRoleRes>> CreateRole(CreateRoleReq req) {
+        var newRoles = await unitOfWork.RoleManager.AddNewNamesAsync(req.Names);
+        var added = await unitOfWork.SaveChangesAsync();
 
-        var result = await unitOfWork.RoleManager.CreateAsync(new Role(req.Name));
-        return result.Succeeded ? Created() : BadRequest(result);
+        var newRoleNames = newRoles.Select(role => role.Name);
+        return Ok(new { Count = added, New = newRoleNames });
     }
 
-    [HttpPut]
+    [HttpPut("{id}")]
     public async Task<ActionResult> UpdateRole(string id, UpdateRole req) {
         var role = await unitOfWork.RoleManager.FindByIdAsync(id);
-        if (role is null) return NoContent();
+        if (role is null) return NotFound();
+
+        var newRole = await unitOfWork.RoleManager.FindByNameAsync(req.NewName);
+        if (newRole is not null) return Conflict();
 
         var result = await unitOfWork.RoleManager.SetRoleNameAsync(role, req.NewName);
-        return result.Succeeded ? NoContent() : BadRequest(result);
+        if (!result.Succeeded)
+            return BadRequest(result);
+
+        await unitOfWork.SaveChangesAsync();
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
@@ -51,6 +57,16 @@ public class RolesController(IUnitOfWork unitOfWork) : ControllerBase {
 
         var result = await unitOfWork.RoleManager.DeleteAsync(role);
         return result.Succeeded ? NoContent() : BadRequest(result);
+    }
+
+    [HttpDelete("names")]
+    public async Task<ActionResult> DeleteByNames(DeleteByNamesReq req) {
+        var roles = await unitOfWork.RoleManager.GetByNamesAsync(req.Names, false, false, false);
+        unitOfWork.RoleManager.RemoveRanges(roles);
+        var deleted = await unitOfWork.SaveChangesAsync();
+
+        var deletedRoles = roles.Select(role => role.Name);
+        return Ok(new { Count = deleted, Deleted = deletedRoles });
     }
 
     private ActionResult BadRequest(IdentityResult result) {

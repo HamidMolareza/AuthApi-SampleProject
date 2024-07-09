@@ -2,6 +2,10 @@ using System.Security.Claims;
 using System.Text;
 using AuthApi.Auth.Entities;
 using AuthApi.Auth.Options;
+using AuthApi.Auth.Services.Role;
+using AuthApi.Auth.Services.Session;
+using AuthApi.Auth.Services.Token;
+using AuthApi.Auth.Services.UserServices;
 using AuthApi.Data;
 using AuthApi.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -16,12 +20,12 @@ public static class AuthServiceConfigurations {
         var jwtOptions = optionModels.GetOption<JwtOptions>();
         var passwordOptions = optionModels.GetOption<AppPasswordOptions>();
 
-        services.AddIdentity<User, Role>()
+        services.AddIdentity<User, Entities.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-        services.AddScoped<UserManager>()
-            .AddScoped<RoleManager>()
+        services.AddScoped<IUserManager, UserManager>()
+            .AddScoped<IRoleManager, RoleManager>()
             .AddScoped<ITokenManager, TokenManager>()
             .AddScoped<ISessionManager, SessionManager>();
 

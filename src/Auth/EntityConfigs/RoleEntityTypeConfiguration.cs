@@ -17,5 +17,8 @@ public class RoleEntityTypeConfiguration : IEntityTypeConfiguration<Role> {
             .WithOne(e => e.Role)
             .HasForeignKey(rc => rc.RoleId)
             .IsRequired();
+
+        builder.Property(i => i.Name).IsRequired();
+        builder.Property(i => i.NormalizedName).IsRequired();
     }
 }

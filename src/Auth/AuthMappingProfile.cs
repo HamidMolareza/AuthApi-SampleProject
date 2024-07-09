@@ -6,6 +6,6 @@ namespace AuthApi.Auth;
 
 public class AuthMappingProfile : Profile {
     public AuthMappingProfile() {
-        CreateMap<Session, GetSessionsRes>();
+        CreateMap<Session, GetSessionRes>();
     }
 }

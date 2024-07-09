@@ -1,6 +1,6 @@
 namespace AuthApi.Auth.Dto;
 
-public record GetSessionsRes(
+public record GetSessionRes(
     Guid Id,
     string IpAddress,
     string UserAgent,

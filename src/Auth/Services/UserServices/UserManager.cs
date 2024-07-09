@@ -3,12 +3,18 @@ using AuthApi.Helpers;
 using AuthApi.Program;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.Options;
 using OnRails;
 using OnRails.ResultDetails.Errors;
 
 namespace AuthApi.Auth.Services.UserServices;
 
-public class UserManager(IUnitOfWork unitOfWork, UserManager<User> aspUserManager) : IUserManager {
+public class UserManager(
+    IUnitOfWork unitOfWork,
+    UserManager<User> aspUserManager,
+    IOptions<IdentityOptions> optionsAccessor) : IUserManager {
+    public IdentityOptions Options { get; set; } = optionsAccessor.Value;
+
     public Task<List<User>> GetAllAsync(bool asNoTracking, bool includeRoles = false, bool includeClaims = false,
         bool includeLogins = false, bool includeTokens = false, bool includeSessions = false,
         CancellationToken cancellationToken = default) {
@@ -22,6 +28,10 @@ public class UserManager(IUnitOfWork unitOfWork, UserManager<User> aspUserManage
         return unitOfWork.UserStore.GetByIdAsync(id, asNoTracking, includeRoles, includeClaims, includeLogins,
             includeTokens,
             includeSessions, cancellationToken);
+    }
+
+    public Task<User?> GetByEmailAsync(string email) {
+        return aspUserManager.FindByEmailAsync(email);
     }
 
     public async Task<Result> AddRolesAsync(string userId, string[] roles, CancellationToken cancellationToken) {
@@ -40,7 +50,7 @@ public class UserManager(IUnitOfWork unitOfWork, UserManager<User> aspUserManage
         return identityResult.MapToResult();
     }
 
-    public async Task<Result> RemoveRolesAsync(string userId, string[] roles, CancellationToken ct) {
+    public async Task<Result> DeleteRolesAsync(string userId, string[] roles, CancellationToken ct) {
         if (roles.Length == 0) return Result.Ok();
 
         var user = await GetByIdAsync(userId, false, includeRoles: true, cancellationToken: ct);
@@ -55,7 +65,7 @@ public class UserManager(IUnitOfWork unitOfWork, UserManager<User> aspUserManage
         return identityResult.MapToResult();
     }
 
-    public Task<int> RemoveAllUsersExceptRolesAsync(params string[] roles) {
+    public Task<int> DeleteAllUsersExceptRolesAsync(params string[] roles) {
         unitOfWork.UserStore.RemoveAllUsersExceptRoles(roles);
         return unitOfWork.SaveChangesAsync();
     }
@@ -66,5 +76,17 @@ public class UserManager(IUnitOfWork unitOfWork, UserManager<User> aspUserManage
 
         unitOfWork.UserStore.Delete(user);
         return await unitOfWork.SaveChangesAsync();
+    }
+
+    public Task<IdentityResult> CreateAsync(User user, string password) {
+        return aspUserManager.CreateAsync(user, password);
+    }
+
+    public Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword) {
+        return aspUserManager.ChangePasswordAsync(user, currentPassword, newPassword);
+    }
+
+    public Task<string> GetUserIdAsync(User user) {
+        return aspUserManager.GetUserIdAsync(user);
     }
 }

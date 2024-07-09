@@ -28,11 +28,10 @@ public class UsersController(IUserManager userManager, IMapper mapper) : Control
 
     [HttpDelete]
     public async Task<ActionResult> RemoveAllUsers() {
-        var count = await userManager.RemoveAllUsersExceptRolesAsync(Roles.Administrator);
+        var count = await userManager.DeleteAllUsersExceptRolesAsync(Roles.Administrator);
         return Ok(new { Count = count });
     }
 
-    //TODO: check
     [HttpPost("Role/{userId}")]
     public Task<ActionResult> AddRoles(string userId, [FromBody] string[] roles, CancellationToken cancellationToken) {
         return userManager.AddRolesAsync(userId, roles, cancellationToken)
@@ -41,7 +40,7 @@ public class UsersController(IUserManager userManager, IMapper mapper) : Control
 
     [HttpDelete("Role/{userId}")]
     public Task<ActionResult> RemoveRoles(string userId, [FromBody] string[] roles, CancellationToken ct) {
-        return userManager.RemoveRolesAsync(userId, roles, ct)
+        return userManager.DeleteRolesAsync(userId, roles, ct)
             .ReturnNoContent();
     }
 

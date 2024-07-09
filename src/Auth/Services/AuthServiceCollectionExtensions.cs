@@ -93,7 +93,7 @@ public static class AuthServiceConfigurations {
                         return;
                     }
 
-                    var sessionId = userPrincipal.FindFirstValue(Claims.SessionId);
+                    var sessionId = userPrincipal.FindFirstValue(JwtClaims.SessionId);
                     if (sessionId is null) {
                         context.Fail("Unauthorized");
                         return;
@@ -101,7 +101,7 @@ public static class AuthServiceConfigurations {
 
                     var sessionManager = context.HttpContext.RequestServices.GetRequiredService<ISessionManager>();
                     var session = await sessionManager.GetByIdAsync(new Guid(sessionId));
-                    if (session is null || !session.Active) {
+                    if (session is null) {
                         context.Fail("Unauthorized");
                         return;
                     }

@@ -1,21 +1,28 @@
 using AuthApi.Auth.Entities;
 using AuthApi.Auth.Services.Role;
+using AuthApi.Auth.Services.UserServices;
 using AuthApi.Data;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using UserStore = AuthApi.Auth.Services.UserServices.UserStore;
 
 namespace AuthApi.Program;
 
 public class UnitOfWork : IUnitOfWork {
     public IRoleStore RoleStore { get; }
+    public IUserStore UserStore { get; }
+
     private IDbContextTransaction? _transaction;
     private readonly AppDbContext _db;
 
     public UnitOfWork(AppDbContext db) {
         _db = db;
 
-        var roleStore = new RoleStore<Role>(db);
-        RoleStore = new RoleStore(roleStore, db);
+        var aspRoleStore = new RoleStore<Role>(db);
+        RoleStore = new RoleStore(aspRoleStore, db);
+
+        var aspUserStore = new UserStore<User>(db);
+        UserStore = new UserStore(db, aspUserStore);
     }
 
     public async Task BeginTransactionAsync() {

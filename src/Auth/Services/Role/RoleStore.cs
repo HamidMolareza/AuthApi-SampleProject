@@ -5,37 +5,32 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi.Auth.Services.Role;
 
-public class RoleStore : Store<Entities.Role, AppDbContext>, IRoleStore {
-    private readonly RoleStore<Entities.Role> _roleStore;
-    private readonly AppDbContext _db;
-
-    public RoleStore(RoleStore<Entities.Role> roleStore, AppDbContext dbContext) : base(dbContext) {
-        _roleStore = roleStore;
-        _db = dbContext;
-    }
+public class RoleStore(RoleStore<Entities.Role> roleStore, AppDbContext dbContext)
+    : Store<Entities.Role, AppDbContext>(dbContext), IRoleStore {
+    private readonly RoleStore<Entities.Role> _roleStore = roleStore;
 
     public Task<List<Entities.Role>> GetAllAsync(bool asNoTracking, bool includeUsers, bool includeClaims) {
-        var query = _db.Roles.AsQueryable();
+        var query = DbSet.AsQueryable();
         query = AddToQuery(query, includeUsers, includeClaims, asNoTracking);
         return query.ToListAsync();
     }
 
     public Task<Entities.Role?> GetByIdAsync(string roleId, bool asNoTracking, bool includeUsers, bool includeClaims) {
-        var query = _db.Roles.Where(role => role.Id == roleId).AsQueryable();
+        var query = DbSet.Where(role => role.Id == roleId).AsQueryable();
         query = AddToQuery(query, includeUsers, includeClaims, asNoTracking);
         return query.FirstOrDefaultAsync();
     }
 
     public Task<Entities.Role?> GetByNormalizeNameAsync(string normalizedName, bool asNoTracking, bool includeUsers,
         bool includeClaims) {
-        var query = _db.Roles.Where(role => role.NormalizedName == normalizedName).AsQueryable();
+        var query = DbSet.Where(role => role.NormalizedName == normalizedName).AsQueryable();
         query = AddToQuery(query, includeUsers, includeClaims, asNoTracking);
         return query.FirstOrDefaultAsync();
     }
 
     public Task<List<Entities.Role>> GetByNamesAsync(IEnumerable<string> names, bool asNoTracking, bool includeUsers,
         bool includeClaims) {
-        var query = _db.Roles.Where(role => names.Contains(role.Name!.ToLower())).AsQueryable();
+        var query = DbSet.Where(role => names.Contains(role.Name!.ToLower())).AsQueryable();
         query = AddToQuery(query, includeUsers, includeClaims, asNoTracking);
 
         return query.ToListAsync();
@@ -44,9 +39,8 @@ public class RoleStore : Store<Entities.Role, AppDbContext>, IRoleStore {
     public Task<List<Entities.Role>> GetByNormalizedNamesAsync(IEnumerable<string> names, bool asNoTracking,
         bool includeUsers,
         bool includeClaims) {
-        var query = _db.Roles.Where(role =>
-                names.Contains(role.NormalizedName.ToLower()))
-            .AsQueryable();
+        var query = DbSet.Where(role =>
+            names.Contains(role.NormalizedName)).AsQueryable();
 
         query = AddToQuery(query, includeUsers, includeClaims, asNoTracking);
 

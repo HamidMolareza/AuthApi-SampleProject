@@ -82,7 +82,7 @@ public class RoleManager(IUnitOfWork unitOfWork, RoleManager<Entities.Role> aspR
         return roles;
     }
 
-    private List<string> GetUniqueNormalizedNames(IEnumerable<string?> names) =>
+    protected List<string> GetUniqueNormalizedNames(IEnumerable<string?> names) =>
         names.Where(name => !string.IsNullOrWhiteSpace(name))
             .Distinct()
             .Select(aspRoleManager.NormalizeKey)

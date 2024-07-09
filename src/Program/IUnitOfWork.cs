@@ -1,16 +1,11 @@
-using AuthApi.Auth.Entities;
-using AuthApi.Auth.Services;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore.Storage;
+using AuthApi.Auth.Services.Role;
 
 namespace AuthApi.Program;
 
-public interface IUnitOfWork {
-    public UserManager UserManager { get; }
-    public RoleManager RoleManager { get; }
-    public ITokenManager TokenManager { get; }
-    public ISessionManager SessionManager { get; }
-    public SignInManager<User> SignInManager { get; }
-    public Task<IDbContextTransaction> BeginTransactionAsync();
+public interface IUnitOfWork : IDisposable {
+    public IRoleStore RoleStore { get; }
+    public Task BeginTransactionAsync();
+    public Task CommitTransactionAsync();
+    public Task RollbackTransactionAsync();
     public Task<int> SaveChangesAsync();
 }

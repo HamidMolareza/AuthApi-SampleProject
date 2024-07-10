@@ -2,8 +2,13 @@ using System.Security.Claims;
 using System.Text;
 using AuthApi.Auth.Entities;
 using AuthApi.Auth.Options;
+using AuthApi.Auth.Services.Role;
+using AuthApi.Auth.Services.Session;
+using AuthApi.Auth.Services.Token;
+using AuthApi.Auth.Services.UserServices;
 using AuthApi.Data;
 using AuthApi.Helpers;
+using AuthApi.Helpers.Option;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -16,11 +21,12 @@ public static class AuthServiceConfigurations {
         var jwtOptions = optionModels.GetOption<JwtOptions>();
         var passwordOptions = optionModels.GetOption<AppPasswordOptions>();
 
-        services.AddIdentity<User, Role>()
+        services.AddIdentity<User, Entities.Role>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-        services.AddScoped<UserManager>()
+        services.AddScoped<IUserManager, UserManager>()
+            .AddScoped<IRoleManager, RoleManager>()
             .AddScoped<ITokenManager, TokenManager>()
             .AddScoped<ISessionManager, SessionManager>();
 
@@ -88,7 +94,7 @@ public static class AuthServiceConfigurations {
                         return;
                     }
 
-                    var sessionId = userPrincipal.FindFirstValue(Claims.SessionId);
+                    var sessionId = userPrincipal.FindFirstValue(JwtClaims.SessionId);
                     if (sessionId is null) {
                         context.Fail("Unauthorized");
                         return;
@@ -96,7 +102,7 @@ public static class AuthServiceConfigurations {
 
                     var sessionManager = context.HttpContext.RequestServices.GetRequiredService<ISessionManager>();
                     var session = await sessionManager.GetByIdAsync(new Guid(sessionId));
-                    if (session is null || !session.Active) {
+                    if (session is null) {
                         context.Fail("Unauthorized");
                         return;
                     }

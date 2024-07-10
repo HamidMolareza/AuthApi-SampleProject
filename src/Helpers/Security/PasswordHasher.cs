@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
-namespace AuthApi.Helpers;
+namespace AuthApi.Helpers.Security;
 
 public static class PasswordHasher {
     private const int SaltSize = 16; // 128-bit salt

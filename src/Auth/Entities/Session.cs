@@ -17,10 +17,6 @@ public class Session : ISoftDelete {
 
     [Required] [MaxLength(450)] public string UserId { get; set; } = default!;
     public User User { get; set; } = default!;
-
-    public bool IsRevoked { get; set; }
     public DateTime CreatedAt { get; set; }
-
-    public bool Active => !IsRevoked;
     public bool IsDeleted { get; set; }
 }

@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace AuthApi.Helpers;
+namespace AuthApi.Helpers.Security;
 
 public static class SecurityHelpers {
     public static byte[] GenerateSecureRandom(int length) {

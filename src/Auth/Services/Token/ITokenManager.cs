@@ -1,6 +1,6 @@
 using AuthApi.Auth.Options;
 
-namespace AuthApi.Auth.Services;
+namespace AuthApi.Auth.Services.Token;
 
 public interface ITokenManager {
     public record RefreshToken(string Token, string Sid); //Sid = SessionId

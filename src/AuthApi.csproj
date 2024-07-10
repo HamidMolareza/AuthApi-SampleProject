@@ -26,4 +26,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="OnRails">
+      <HintPath>..\..\..\Payadel\OnRails\OnRails\bin\Release\net8.0\OnRails.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

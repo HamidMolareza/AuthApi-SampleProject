@@ -86,6 +86,10 @@ public class UserManager(
         return aspUserManager.ChangePasswordAsync(user, currentPassword, newPassword);
     }
 
+    public Task<IList<string>> GetRolesAsync(User user) {
+        return aspUserManager.GetRolesAsync(user);
+    }
+
     public Task<string> GetUserIdAsync(User user) {
         return aspUserManager.GetUserIdAsync(user);
     }

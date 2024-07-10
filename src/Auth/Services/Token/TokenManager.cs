@@ -4,16 +4,17 @@ using System.Text;
 using System.Text.Json;
 using AuthApi.Auth.Entities;
 using AuthApi.Auth.Options;
+using AuthApi.Auth.Services.UserServices;
 using AuthApi.Helpers;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace AuthApi.Auth.Services;
+namespace AuthApi.Auth.Services.Token;
 
 public class TokenManager(
     IOptions<JwtOptions> jwtOptions,
     IOptions<RefreshTokenOptions> refreshTokenOptions,
-    UserManager userManager) : ITokenManager {
+    IUserManager userManager) : ITokenManager {
     public JwtOptions JwtOptions { get; } = jwtOptions.Value;
     public RefreshTokenOptions RefreshTokenOptions { get; } = refreshTokenOptions.Value;
 
@@ -78,7 +79,7 @@ public class TokenManager(
         var claims = new List<Claim> {
             new(JwtRegisteredClaimNames.Sub, userId),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
-            new(Claims.SessionId, sessionId),
+            new(JwtClaims.SessionId, sessionId),
         };
 
         if (addRoleClaims) {

@@ -1,3 +1,5 @@
+using AuthApi.Helpers.Store;
+
 namespace AuthApi.Helpers.Manager;
 
 public class Manager<TStore, TEntity>(TStore store) : IManager<TEntity>

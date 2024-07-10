@@ -8,6 +8,7 @@ using AuthApi.Auth.Services.Token;
 using AuthApi.Auth.Services.UserServices;
 using AuthApi.Data;
 using AuthApi.Helpers;
+using AuthApi.Helpers.Option;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;

@@ -1,5 +1,6 @@
 using AuthApi.Helpers;
 using AuthApi.Helpers.Manager;
+using AuthApi.Helpers.OnRails;
 using AuthApi.Program;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.ChangeTracking;

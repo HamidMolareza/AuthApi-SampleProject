@@ -1,5 +1,6 @@
 using AuthApi.Data;
 using AuthApi.Helpers;
+using AuthApi.Helpers.Store;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 

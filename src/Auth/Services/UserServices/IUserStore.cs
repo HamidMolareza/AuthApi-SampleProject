@@ -1,5 +1,6 @@
 using AuthApi.Auth.Entities;
 using AuthApi.Helpers;
+using AuthApi.Helpers.Store;
 
 namespace AuthApi.Auth.Services.UserServices;
 

@@ -3,6 +3,7 @@ using AuthApi.Admin.Filters;
 using AuthApi.Auth.Services;
 using AuthApi.Data;
 using AuthApi.Helpers;
+using AuthApi.Helpers.Option;
 using AuthApi.Program;
 using Microsoft.EntityFrameworkCore;
 

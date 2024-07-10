@@ -1,5 +1,6 @@
 using AuthApi.Helpers;
 using AuthApi.Helpers.Manager;
+using AuthApi.Helpers.Security;
 using AuthApi.Program;
 
 namespace AuthApi.Auth.Services.Session;

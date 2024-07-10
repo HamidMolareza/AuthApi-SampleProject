@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace AuthApi.Helpers;
+namespace AuthApi.Helpers.Option;
 
 public static class OptionModelHelpers {
     public static T GetOption<T>(this IEnumerable<OptionModel> optionModels) where T : class {

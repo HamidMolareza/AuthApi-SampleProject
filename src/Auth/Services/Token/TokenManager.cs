@@ -6,6 +6,7 @@ using AuthApi.Auth.Entities;
 using AuthApi.Auth.Options;
 using AuthApi.Auth.Services.UserServices;
 using AuthApi.Helpers;
+using AuthApi.Helpers.Security;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 

@@ -1,5 +1,6 @@
 using AuthApi.Data;
 using AuthApi.Helpers;
+using AuthApi.Helpers.Store;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuthApi.Auth.Services.Session;

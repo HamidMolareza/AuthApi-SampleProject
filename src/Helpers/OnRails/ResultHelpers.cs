@@ -3,7 +3,7 @@ using OnRails;
 using OnRails.Models;
 using OnRails.ResultDetails.Errors.BadRequest;
 
-namespace AuthApi.Helpers;
+namespace AuthApi.Helpers.OnRails;
 
 public static class ResultHelpers {
     public static Result MapToResult(this IdentityResult identityResult) {

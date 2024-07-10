@@ -1,4 +1,5 @@
 using AuthApi.Helpers;
+using AuthApi.Helpers.Option;
 
 namespace AuthApi.Admin.Options;
 

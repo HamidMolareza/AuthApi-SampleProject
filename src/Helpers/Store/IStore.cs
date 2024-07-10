@@ -1,4 +1,4 @@
-namespace AuthApi.Helpers;
+namespace AuthApi.Helpers.Store;
 
 public interface IStore<TEntity> where TEntity : class {
     Task<bool> AnyAsync(CancellationToken cancellationToken = default);

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace AuthApi.Helpers;
+namespace AuthApi.Helpers.Store;
 
 public class Store<TEntity, TDbContext>(TDbContext db) : IStore<TEntity>
     where TEntity : class

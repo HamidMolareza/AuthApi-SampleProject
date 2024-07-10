@@ -36,7 +36,8 @@ public class UserManager(
         return aspUserManager.FindByEmailAsync(email);
     }
 
-    public async Task<Result> AddRolesAsync(string userId, string[] roles, CancellationToken cancellationToken) {
+    public async Task<Result> AddRolesAsync(string userId, string[] roles,
+        CancellationToken cancellationToken = default) {
         if (roles.Length == 0) return Result.Ok();
 
         var user = await GetByIdAsync(userId, false, includeRoles: true, cancellationToken: cancellationToken);

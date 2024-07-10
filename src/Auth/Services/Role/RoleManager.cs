@@ -9,7 +9,8 @@ using OnRails.ResultDetails.Success;
 
 namespace AuthApi.Auth.Services.Role;
 
-public class RoleManager(IUnitOfWork unitOfWork, RoleManager<Entities.Role> aspRoleManager) : Manager<IRoleStore, Entities.Role>(unitOfWork.RoleStore), IRoleManager {
+public class RoleManager(IUnitOfWork unitOfWork, RoleManager<Entities.Role> aspRoleManager)
+    : Manager<IRoleStore, Entities.Role>(unitOfWork.RoleStore), IRoleManager {
     public async Task<List<Entities.Role>> CreateRolesAsync(List<string> names) {
         var newRoleNames = await GetNewRoleNamesAsync(names);
 
@@ -45,6 +46,10 @@ public class RoleManager(IUnitOfWork unitOfWork, RoleManager<Entities.Role> aspR
             .ToList();
 
         return names.Except(existNames, new CaseInsensitiveValueComparer()).ToList();
+    }
+
+    public Task<bool> RoleExistsAsync(string roleName) {
+        return aspRoleManager.RoleExistsAsync(roleName);
     }
 
     public async Task<Result> UpdateByIdAsync(string id, string newName) {

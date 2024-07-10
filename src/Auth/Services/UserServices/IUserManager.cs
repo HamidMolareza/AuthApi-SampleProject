@@ -5,7 +5,7 @@ using OnRails;
 
 namespace AuthApi.Auth.Services.UserServices;
 
-public interface IUserManager: IManager<User> {
+public interface IUserManager : IManager<User> {
     public IdentityOptions Options { get; set; }
 
     Task<List<User>> GetAllAsync(bool asNoTracking, bool includeRoles = false, bool includeClaims = false,
@@ -19,7 +19,7 @@ public interface IUserManager: IManager<User> {
     Task<string> GetUserIdAsync(User user);
     Task<User?> GetByEmailAsync(string email);
 
-    Task<Result> AddRolesAsync(string userId, string[] roles, CancellationToken cancellationToken);
+    Task<Result> AddRolesAsync(string userId, string[] roles, CancellationToken cancellationToken = default);
 
     Task<Result> DeleteRolesAsync(string userId, string[] roles, CancellationToken ct);
     Task<int> DeleteAllUsersExceptRolesAsync(params string[] roles);

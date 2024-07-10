@@ -2,7 +2,7 @@ using AuthApi.Helpers.Manager;
 
 namespace AuthApi.Auth.Services.Session;
 
-public interface ISessionManager: IManager<Entities.Session> {
+public interface ISessionManager : IManager<Entities.Session> {
     Task<List<Entities.Session>> GetAllAsync(bool asNoTracking, string? userId = null, bool includeUser = false,
         CancellationToken cancellationToken = default);
 

@@ -1,13 +1,20 @@
 namespace AuthApi.Auth.Services.Session;
 
 public interface ISessionManager {
-    public Task<Entities.Session?> GetByIdAsync(Guid id);
-    Task<Entities.Session?> GetByIdAsync(Guid id, string userId);
-    public Task CreateAsync(Entities.Session session, string refreshTokenValue);
-    public Task RevokeAllExceptAsync(string userId, Guid sessionId);
-    public Task<Entities.Session?> UpdateRefreshTokenAsync(Guid sessionId, string refreshToken, DateTime refreshExpire);
-    public Task<List<Entities.Session>> GetAllAsync(string? userId = null);
-    public Task RemoveAsync(Guid sessionId, string userId);
-    public void SetRefreshToken(Entities.Session session, string refreshTokenValue);
-    public Task<bool> ValidateRefreshTokenAsync(Guid sessionId, string refreshTokenValue);
+    Task<List<Entities.Session>> GetAllAsync(bool asNoTracking, string? userId = null, bool includeUser = false,
+        CancellationToken cancellationToken = default);
+
+    ValueTask<Entities.Session?> GetByIdAsync(Guid sessionId, CancellationToken cancellationToken = default);
+    Task<Entities.Session?> GetByIdAsync(Guid sessionId, string userId, CancellationToken cancellationToken = default);
+
+    Task CreateAsync(Entities.Session session, string refreshTokenValue);
+
+    Task<Entities.Session?> UpdateRefreshTokenAsync(Guid sessionId, string refreshToken, DateTime refreshExpire);
+    void SetRefreshToken(Entities.Session session, string refreshTokenValue);
+
+    Task RevokeAllExceptAsync(string userId, Guid sessionId);
+    Task RemoveAsync(Guid sessionId, string userId);
+
+    Task<bool> ValidateRefreshTokenAsync(Guid sessionId, string refreshTokenValue,
+        CancellationToken cancellationToken = default);
 }

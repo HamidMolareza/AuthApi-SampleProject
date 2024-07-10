@@ -26,4 +26,5 @@ public interface IUserManager {
 
     Task<IdentityResult> CreateAsync(User user, string password);
     Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword);
+    Task<IList<string>> GetRolesAsync(User user);
 }

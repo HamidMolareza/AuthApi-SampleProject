@@ -1,5 +1,6 @@
 using AuthApi.Auth.Entities;
 using AuthApi.Helpers;
+using AuthApi.Helpers.Manager;
 using AuthApi.Program;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -12,7 +13,8 @@ namespace AuthApi.Auth.Services.UserServices;
 public class UserManager(
     IUnitOfWork unitOfWork,
     UserManager<User> aspUserManager,
-    IOptions<IdentityOptions> optionsAccessor) : IUserManager {
+    IOptions<IdentityOptions> optionsAccessor)
+    : Manager<IUserStore, User>(unitOfWork.UserStore), IUserManager {
     public IdentityOptions Options { get; set; } = optionsAccessor.Value;
 
     public Task<List<User>> GetAllAsync(bool asNoTracking, bool includeRoles = false, bool includeClaims = false,

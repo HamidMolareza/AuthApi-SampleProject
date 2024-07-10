@@ -1,4 +1,5 @@
 using AuthApi.Helpers;
+using AuthApi.Helpers.Manager;
 using AuthApi.Program;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -8,7 +9,7 @@ using OnRails.ResultDetails.Success;
 
 namespace AuthApi.Auth.Services.Role;
 
-public class RoleManager(IUnitOfWork unitOfWork, RoleManager<Entities.Role> aspRoleManager) : IRoleManager {
+public class RoleManager(IUnitOfWork unitOfWork, RoleManager<Entities.Role> aspRoleManager) : Manager<IRoleStore, Entities.Role>(unitOfWork.RoleStore), IRoleManager {
     public async Task<List<Entities.Role>> CreateRolesAsync(List<string> names) {
         var newRoleNames = await GetNewRoleNamesAsync(names);
 

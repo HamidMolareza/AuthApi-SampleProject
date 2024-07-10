@@ -7,6 +7,14 @@ public class Store<TEntity, TDbContext>(TDbContext db) : IStore<TEntity>
     where TDbContext : DbContext {
     protected readonly DbSet<TEntity> DbSet = db.Set<TEntity>();
 
+    public Task<bool> AnyAsync(CancellationToken cancellationToken = default) {
+        return DbSet.AnyAsync(cancellationToken);
+    }
+
+    public Task<int> CountAsync(CancellationToken cancellationToken = default) {
+        return DbSet.CountAsync(cancellationToken);
+    }
+
     public virtual ValueTask<TEntity?> GetByIdsAsync(object?[]? keyValues, bool asNoTracking,
         CancellationToken cancellationToken = default) {
         return DbSet.FindAsync(keyValues, cancellationToken);

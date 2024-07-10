@@ -1,10 +1,11 @@
 using AuthApi.Auth.Entities;
+using AuthApi.Helpers.Manager;
 using Microsoft.AspNetCore.Identity;
 using OnRails;
 
 namespace AuthApi.Auth.Services.UserServices;
 
-public interface IUserManager {
+public interface IUserManager: IManager<User> {
     public IdentityOptions Options { get; set; }
 
     Task<List<User>> GetAllAsync(bool asNoTracking, bool includeRoles = false, bool includeClaims = false,

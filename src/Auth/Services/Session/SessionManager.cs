@@ -1,9 +1,11 @@
 using AuthApi.Helpers;
+using AuthApi.Helpers.Manager;
 using AuthApi.Program;
 
 namespace AuthApi.Auth.Services.Session;
 
-public class SessionManager(IUnitOfWork unitOfWork) : ISessionManager {
+public class SessionManager(IUnitOfWork unitOfWork)
+    : Manager<ISessionStore, Entities.Session>(unitOfWork.SessionStore), ISessionManager {
     public ValueTask<Entities.Session?> GetByIdAsync(Guid sessionId, CancellationToken cancellationToken = default) {
         return unitOfWork.SessionStore.GetByIdsAsync([sessionId], true, cancellationToken: cancellationToken);
     }

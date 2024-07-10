@@ -1,8 +1,9 @@
+using AuthApi.Helpers.Manager;
 using OnRails;
 
 namespace AuthApi.Auth.Services.Role;
 
-public interface IRoleManager {
+public interface IRoleManager: IManager<Entities.Role> {
     public Task<List<Entities.Role>> CreateRolesAsync(List<string> names);
     Task<List<Entities.Role>> GetAllAsync(bool asNoTracking, bool includeUsers = false, bool includeClaims = false);
 

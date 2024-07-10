@@ -1,6 +1,6 @@
-namespace AuthApi.Helpers;
+namespace AuthApi.Helpers.Manager;
 
-public interface IStore<TEntity> where TEntity : class {
+public interface IManager<TEntity> where TEntity : class {
     Task<bool> AnyAsync(CancellationToken cancellationToken = default);
     Task<int> CountAsync(CancellationToken cancellationToken = default);
 
